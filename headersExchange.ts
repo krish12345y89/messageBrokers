@@ -32,6 +32,9 @@ class HeadersExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
 
             if (!this.exchange) {
@@ -53,6 +56,9 @@ class HeadersExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
 
             if (!this.exchange) {
@@ -68,7 +74,7 @@ class HeadersExchange {
             console.log(`Waiting for messages in queue '${q.queue}'...`);
 
             await this.channel.consume(q.queue, (data: ConsumeMessage | null) => {
-                if (data) {
+                if (data && this.channel) {
                     const consumedMessage = JSON.parse(data.content.toString());
                     console.log("Message received successfully:", consumedMessage);
                     this.channel.ack(data);

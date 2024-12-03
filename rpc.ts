@@ -29,8 +29,11 @@ export class Rpc {
 
     public async requestData(queueName: string, data: object) {
         try {
-            if (this.channel == null) {
-                throw new Error("Failed to get the channel");
+            if (!this.channel) {
+                await this.initialise();
+                if (this.channel==null) {
+                    throw new Error("failed to initaise the channel");
+                }
             }
 
             const correlationalId: string = uuid();
@@ -51,12 +54,12 @@ export class Rpc {
                     rej("Failed to retrieve the data: Timeout");
                 }, 20000);
 
-                this.channel.consume(q.queue, (msg) => {
+                this.channel!.consume(q.queue, (msg) => {
                     if (msg && msg.properties.correlationId === correlationalId) {
                         clearTimeout(timeout);
                         const consumed = JSON.parse(msg.content.toString());
                         console.log({ sendedData: sendedData.toString(), receivedData: consumed });
-                        this.channel.ack(msg);
+                        this.channel!.ack(msg);
                         res(consumed);
                     }
                 }, { noAck: false });
@@ -77,7 +80,7 @@ export class Rpc {
             console.log(`Queue '${queueName}' asserted successfully for sending data.`);
 
             await this.channel.consume(queueName, async (data) => {
-                if (data && data.content) {
+                if (data && data.content && this.channel) {
                     const consumed = JSON.parse(data.content.toString());
                     const replyTo = data.properties.replyTo;
                     const correlationId = data.properties.correlationId;

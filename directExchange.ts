@@ -34,6 +34,9 @@ export class DirectExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
             await this.channel.assertQueue(queueName, { durable: true });
             console.log(`Queue '${queueName}' asserted successfully`);
@@ -54,9 +57,12 @@ export class DirectExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
             await this.channel.consume(queueName, (data: ConsumeMessage | null) => {
-                if (data) {
+                if (data && this.channel) {
                     const consumed = JSON.parse(data.content.toString());
                     console.log("Data consumed successfully:", consumed);
                     this.channel.ack(data);

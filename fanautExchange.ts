@@ -34,6 +34,9 @@ export class FanoutExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
 
             await this.channel.publish(this.config.exchangeName, "", Buffer.from(JSON.stringify(data)), {
@@ -49,6 +52,9 @@ export class FanoutExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
 
             await this.channel.assertQueue(queueName, { durable: true });
@@ -58,7 +64,7 @@ export class FanoutExchange {
             console.log(`Queue '${queueName}' bound to exchange '${this.config.exchangeName}'`);
 
             await this.channel.consume(queueName, (data: ConsumeMessage | null) => {
-                if (data) {
+                if (data && this.channel) {
                     const consumed = JSON.parse(data.content.toString());
                     console.log("Data consumed successfully:", consumed);
                     this.channel.ack(data);

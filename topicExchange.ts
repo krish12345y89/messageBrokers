@@ -34,6 +34,9 @@ class TopicExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel")
+                }
             }
 
             await this.channel.publish(this.config.exchangeName, routingKey, Buffer.from(JSON.stringify(data)));
@@ -47,6 +50,9 @@ class TopicExchange {
         try {
             if (!this.channel) {
                 await this.initialise();
+                if (!this.channel) {
+                    throw new Error("failed to initaise the channel");
+                }
             }
 
             const q = await this.channel.assertQueue("", { durable: true, exclusive: true });
@@ -56,7 +62,7 @@ class TopicExchange {
             console.log(`Queue '${q.queue}' bound successfully to exchange with pattern '${pattern}'`);
 
             await this.channel.consume(q.queue, (data: ConsumeMessage | null) => {
-                if (data) {
+                if (data && this.channel) {
                     const consumed = JSON.parse(data.content.toString());
                     console.log("Data consumed successfully:", consumed);
                     this.channel.ack(data);
