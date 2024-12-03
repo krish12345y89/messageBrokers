@@ -3,6 +3,4 @@
 
 git clone https://github.com/krish12345y89/messageBroker.git/
 
-echo "# messageBrokers" >> README.md
-git init
-git add 
+
